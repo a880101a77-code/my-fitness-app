@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from streamlit_calendar import calendar
 
 # --- 頁面設定 ---
-st.set_page_config(page_title="歐拉夫健身日誌", page_icon="🐾", layout="centered")
+st.set_page_config(page_title="FITNESS GOAL", page_icon="🐾", layout="centered")
 
 # --- 奶茶色 & 歐拉夫主題 CSS ---
 st.markdown("""
@@ -42,8 +42,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- 標題區 ---
-st.markdown("<h1>🍦 歐拉夫動一動 🍦</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #A68A64;'>今天也要像歐拉夫一樣放鬆又健康唷～</p>", unsafe_allow_html=True)
+st.markdown("<h1>🍦 FINTESS GOAL 🍦</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #A68A64;'>今天也要一樣放鬆又健康唷～</p>", unsafe_allow_html=True)
 
 # --- 1. 初始化資料儲存 ---
 if 'workout_data' not in st.session_state:
@@ -77,7 +77,7 @@ if submitted:
         "weight": w
     })
     st.snow() # 歐拉夫主題適合噴雪花！
-    st.success(f"成功幫歐拉夫記下來了！")
+    st.success(f"成功幫HAN記下來了！")
 
 st.divider()
 
