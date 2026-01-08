@@ -5,7 +5,7 @@ from streamlit_calendar import calendar
 # --- 頁面設定 ---
 st.set_page_config(page_title="菡FITNESS GOAL", page_icon="🐾", layout="centered")
 
-# --- 深度自訂 CSS (奶茶色主題) ---
+# --- 深度自訂 CSS ---
 st.markdown("""
     <style>
     .main { background-color: #F3E9DC; }
@@ -44,20 +44,73 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     workout_type = st.radio("訓練類型", ["重量訓練", "有氧運動"], horizontal=True)
     ex_name = st.text_input("運動項目", placeholder="例如：深蹲 / 跑步機")
     
-    # 這裡確保變數預設值都是乾淨的
+    # 預設數據
     s, w, duration = 0, 0, 0
     
-    # --- 動態顯示邏輯 ---
+    # 動態顯示：有氧時隱藏組數與重量
     if workout_type == "重量訓練":
-        # 只有選重訓才出現這兩個欄位
         col1, col2 = st.columns(2)
         with col1:
             s = st.number_input("組數", min_value=1, step=1, value=3)
         with col2:
             w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
     else:
-        # 只有選有氧才出現分鐘欄位，並且完全不顯示組數/重量
         duration = st.number_input("運動時長 (分鐘)", min_value=1, step=1, value=30)
     
-    # 確保按鈕在表單內
-    submitted = st.form_submit_button("打卡
+    submitted = st.form_submit_button("打卡存進口袋 🐾")
+
+# --- 3. 處理表單送出 ---
+if submitted:
+    date_str = input_date.strftime("%Y-%m-%d")
+    new_record = {
+        "date": date_str, 
+        "type": workout_type,
+        "exercise": ex_name,
+        "sets": s if workout_type == "重量訓練" else None,
+        "weight": w if workout_type == "重量訓練" else None,
+        "duration": duration if workout_type == "有氧運動" else None
+    }
+    st.session_state['workout_data'].append(new_record)
+    st.snow()
+    st.success(f"已記錄 {ex_name}！")
+
+st.divider()
+
+# --- 4. 運動日曆視圖 ---
+st.markdown("<h4>🗓️ 菡運動日記</h4>", unsafe_allow_html=True)
+
+calendar_events = []
+for item in st.session_state['workout_data']:
+    icon = "⏱️" if item["type"] == "有氧運動" else "💪"
+    calendar_events.append({
+        "title": f"{icon} {item['exercise']}", 
+        "start": item["date"], 
+        "allDay": True
+    })
+
+calendar_options = {
+    "headerToolbar": {"left": "prev,next", "center": "title", "right": "today"},
+    "initialView": "dayGridMonth",
+    "selectable": True,
+}
+
+# 確保日曆在一個乾淨的容器中
+cal_state = calendar(events=calendar_events, options=calendar_options, key="workout_calendar_v2")
+
+# --- 5. 點擊詳情顯示 ---
+if cal_state.get("dateClick"):
+    clicked_date = cal_state["dateClick"]["date"][:10]
+    st.markdown(f"### 🧸 {clicked_date} 的訓練清單")
+    
+    todays_workouts = [item for item in st.session_state['workout_data'] if item['date'] == clicked_date]
+    
+    if todays_workouts:
+        for idx, item in enumerate(todays_workouts):
+            if item["type"] == "有氧運動":
+                detail_text = f"⏱️ 運動時長：{item['duration']} 分鐘"
+            else:
+                detail_text = f"💪 {item['sets']} 組 | {item['weight']} kg"
+                
+            st.markdown(f"""
+                <div style="background-color: white; padding: 15px; border-radius: 20px; border: 2px solid #EAE2D6; margin-bottom: 10px;">
+                    <p style="margin:0; color:#8E735B; font-weight:bold;">{
