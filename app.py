@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from streamlit_calendar import calendar
 
 # --- 頁面設定 ---
-st.set_page_config(page_title="Fitness goal", page_icon="🏋️", layout="centered")
+st.set_page_config(page_title="FITNESS GOAL", page_icon="🏋️", layout="centered")
 
 # --- 可愛風格 CSS ---
 st.markdown("""
@@ -32,7 +32,7 @@ with st.form(key="workout_form", clear_on_submit=True):
     d = st.date_input("訓練日期", datetime.now())
     ex_name = st.text_input("運動項目", placeholder="例如：臥推")
     
-    # 這裡修正了欄位定義，改成三個欄位：組數、次數、重量
+    # 這裡確保定義了三個欄位
     col1, col2, col3 = st.columns(3)
     with col1:
         s = st.number_input("組數", min_value=1, step=1, value=3)
@@ -70,13 +70,11 @@ calendar_options = {
 
 state = calendar(events=calendar_events, options=calendar_options, key="my_calendar")
 
-# --- 4. 點擊邏輯：解決日期偏移 ---
+# --- 4. 點擊邏輯 ---
 if state.get("dateClick"):
-    # 獲取原始字串
     raw_date = state["dateClick"]["date"]
     
-    # 修正邏輯：如果字串包含 T00:00，通常會因為時區偏移被當成前一天
-    # 我們將其轉為物件後加 12 小時，確保它留在正確的那天
+    # 時區修正邏輯
     if "T" in raw_date:
         temp_dt = datetime.strptime(raw_date.split(".")[0].replace("Z", ""), "%Y-%m-%dT%H:%M:%S")
         fixed_dt = temp_dt + timedelta(hours=12)
@@ -91,10 +89,19 @@ if state.get("dateClick"):
     if todays_workouts:
         for idx, item in enumerate(todays_workouts):
             with st.container():
-                # 這裡加入了「重量」的顯示
+                # 這裡修正了可能的括號與格式問題
                 st.markdown(f"""
                 <div style="background-color: white; padding: 15px; border-radius: 20px; border: 2px solid #FFE5EC; margin-bottom: 10px;">
                     <p style="margin:0; color:#FF85A2; font-weight:bold; font-size:1.1rem;">{item['exercise']}</p>
                     <p style="margin:0; color:#4A4A4A;">{item['sets']} 組 | {item['reps']} 次 | {item.get('weight', 0)} kg</p>
                 </div>
-                """, unsafe_allow_html
+                """, unsafe_allow_html=True)
+                
+                # 刪除按鈕
+                if st.button(f"🗑️ 刪除項目 {idx+1}", key=f"del_{idx}_{clicked_date}"):
+                    st.session_state['workout_data'].remove(item)
+                    st.rerun()
+    else:
+        st.write("✨ 這天還空空的，來場訓練吧！")
+
+st.markdown("<br><p style='text-align: center; color: #FFB3C6;'>每一刻的汗水都值得被紀錄 🍯</p>", unsafe_allow_html=True)
