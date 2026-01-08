@@ -53,4 +53,3 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
             s = st.number_input("組數", min_value=1, step=1, value=3)
         with c2:
             r = st.number_input("次數", min_value=1, step
-        
