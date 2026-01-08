@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from streamlit_calendar import calendar
 
 # --- 頁面設定 ---
-st.set_page_config(page_title="歐拉夫奶茶日誌", page_icon="🐾", layout="centered")
+st.set_page_config(page_title="菡FITNESS GOAL", page_icon="🐾", layout="centered")
 
 # --- 深度自訂 CSS：全方位奶茶色 ---
 st.markdown("""
@@ -31,7 +31,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<h1>🍦 歐拉夫動一動 🍦</h1>", unsafe_allow_html=True)
+st.markdown("<h1>🍦 菡FITNESS GOAL 🍦</h1>", unsafe_allow_html=True)
 
 # --- 1. 初始化資料 ---
 if 'workout_data' not in st.session_state:
@@ -60,7 +60,7 @@ if submitted:
         "date": date_str, "exercise": ex_name, "sets": s, "reps": r, "weight": w
     })
     st.snow()
-    st.success(f"成功幫歐拉夫記下了 {ex_name}！")
+    st.success(f"成功幫菡記下了 {ex_name}！")
 
 st.divider()
 
@@ -68,7 +68,7 @@ st.divider()
 unique_days = list(set([item['date'] for item in st.session_state['workout_data']]))
 calendar_events = [{"title": "🏋️", "start": day, "allDay": True} for day in unique_days]
 
-st.markdown("<h4>🗓️ 歐拉夫運動地圖</h4>", unsafe_allow_html=True)
+st.markdown("<h4>🗓️ 菡運動日記</h4>", unsafe_allow_html=True)
 
 calendar_options = {
     "headerToolbar": {"left": "prev,next", "center": "title", "right": "today"},
