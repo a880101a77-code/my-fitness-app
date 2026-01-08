@@ -37,7 +37,7 @@ st.markdown("<h1>🍦 歐拉夫動一動 🍦</h1>", unsafe_allow_html=True)
 if 'workout_data' not in st.session_state:
     st.session_state['workout_data'] = []
 
-# --- 2. 紀錄表單 (修正按鈕位置) ---
+# --- 2. 紀錄表單 ---
 with st.form(key="olaf_workout_form", clear_on_submit=True):
     st.markdown("### 🍪 訓練紀錄")
     input_date = st.date_input("訓練日期", datetime.now())
@@ -51,7 +51,6 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     with c3:
         w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
     
-    # 關鍵：送出按鈕必須在 with 區塊內
     submitted = st.form_submit_button("打卡存進口袋 🐾")
 
 if submitted:
@@ -66,29 +65,4 @@ st.divider()
 
 # --- 3. 運動日曆視圖 ---
 unique_days = list(set([item['date'] for item in st.session_state['workout_data']]))
-calendar_events = [{"title": "🏋️", "start": day, "allDay": True} for day in unique_days]
-
-st.markdown("<h4>🗓️ 歐拉夫運動地圖</h4>", unsafe_allow_html=True)
-
-calendar_options = {
-    "headerToolbar": {"left": "prev,next", "center": "title", "right": "today"},
-    "initialView": "dayGridMonth",
-    "selectable": True,
-    "timeZone": "UTC",
-}
-
-state = calendar(events=calendar_events, options=calendar_options, key="olaf_calendar")
-
-# --- 4. 點擊邏輯 (修正日期偏移) ---
-if state.get("dateClick"):
-    # 直接截取字串前 10 碼，不進行時區轉換
-    clicked_date = state["dateClick"]["date"][:10]
-    
-    st.markdown(f"### 🧸 {clicked_date} 的訓練清單")
-    
-    todays_workouts = [item for item in st.session_state['workout_data'] if item['date'] == clicked_date]
-    
-    if todays_workouts:
-        for idx, item in enumerate(todays_workouts):
-            st.markdown(f"""
-                <div style="background-color: white; padding: 15px; border-radius:
+calendar_events = [{"title": "
