@@ -44,84 +44,14 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     workout_type = st.radio("訓練類型", ["重量訓練", "有氧運動"], horizontal=True)
     ex_name = st.text_input("運動項目", placeholder="例如：深蹲 / 跑步機")
     
-    # 預先定義變數，避免 NameError
-    s, r, w, duration = 0, 0, 0, 0
+    # 初始化變數
+    s, w, duration = 0, 0, 0
     
     if workout_type == "重量訓練":
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         with col1:
             s = st.number_input("組數", min_value=1, step=1, value=3)
         with col2:
-            r = st.number_input("次數", min_value=1, step=1, value=12)
-        with col3:
             w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
     else:
-        duration = st.number_input("運動時長 (分鐘)", min_value=1, step=1, value=30)
-    
-    # 這裡確保按鈕在 with 區塊的最末端，且沒有被縮進 if/else 裡
-    submitted = st.form_submit_button("打卡存進口袋 🐾")
-
-# --- 3. 處理表單送出 ---
-if submitted:
-    date_str = input_date.strftime("%Y-%m-%d")
-    new_record = {
-        "date": date_str, 
-        "type": workout_type,
-        "exercise": ex_name, 
-        "sets": s, 
-        "reps": r, 
-        "weight": w,
-        "duration": duration
-    }
-    st.session_state['workout_data'].append(new_record)
-    st.snow()
-    st.success(f"已記錄 {ex_name}！")
-
-st.divider()
-
-# --- 4. 運動日曆視圖 ---
-current_data = st.session_state['workout_data']
-unique_days = list(set([item['date'] for item in current_data]))
-calendar_events = [{"title": "🍦", "start": d, "allDay": True} for d in unique_days]
-
-st.markdown("<h4>🗓️ 菡運動日記</h4>", unsafe_allow_html=True)
-
-calendar_options = {
-    "headerToolbar": {"left": "prev,next", "center": "title", "right": "today"},
-    "initialView": "dayGridMonth",
-    "selectable": True,
-    "timeZone": "UTC",
-}
-
-cal_container = st.container()
-with cal_container:
-    state = calendar(events=calendar_events, options=calendar_options, key="fixed_olaf_calendar")
-
-# --- 5. 點擊邏輯 ---
-if state.get("dateClick"):
-    clicked_date = state["dateClick"]["date"][:10]
-    st.markdown(f"### 🧸 {clicked_date} 的訓練清單")
-    
-    todays_workouts = [item for item in st.session_state['workout_data'] if item['date'] == clicked_date]
-    
-    if todays_workouts:
-        for idx, item in enumerate(todays_workouts):
-            if item.get("type") == "有氧運動":
-                detail_text = f"⏱️ {item['duration']} 分鐘"
-            else:
-                detail_text = f"💪 {item['sets']} 組 | {item['reps']} 次 | {item['weight']} kg"
-                
-            st.markdown(f"""
-                <div style="background-color: white; padding: 15px; border-radius: 20px; border: 2px solid #EAE2D6; margin-bottom: 10px;">
-                    <p style="margin:0; color:#8E735B; font-weight:bold;">{item['exercise']} <small style='color:#A68A64'>({item.get('type')})</small></p>
-                    <p style="margin:0; color:#A68A64; font-size: 0.9rem;">{detail_text}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            if st.button(f"🗑️ 移除項目 {idx+1}", key=f"del_{idx}_{clicked_date}"):
-                st.session_state['workout_data'].remove(item)
-                st.rerun()
-    else:
-        st.write("這天還沒有紀錄唷～")
-
-st.markdown("<br><p style='text-align: center; color: #C6AC8F;'>每一小步都是菡的大進步 🍦</p>", unsafe_allow_html=True)
+        # 有氧運動：只顯示分鐘
