@@ -23,7 +23,7 @@ st.markdown("""
     }
     .stButton>button:hover { background-color: #8E735B; color: white; }
     
-    /* 日曆樣式修正 */
+    /* 日曆樣式 */
     .fc-header-toolbar { color: #8E735B; }
     .fc-daygrid-day-number { color: #8E735B !important; text-decoration: none !important; }
     .fc-day-today { background-color: #EAE2D6 !important; }
@@ -42,44 +42,15 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     st.markdown("### 🍪 訓練紀錄")
     input_date = st.date_input("訓練日期", datetime.now())
     
-    # 訓練類型選擇
     workout_type = st.radio("訓練類型", ["重量訓練", "有氧運動"], horizontal=True)
     ex_name = st.text_input("運動項目", placeholder="例如：深蹲 / 跑步機")
     
-    # 初始化變數
     s, r, w, duration = 0, 0, 0, 0
     
-    # 根據選擇顯示對應欄位
     if workout_type == "重量訓練":
         c1, c2, c3 = st.columns(3)
         with c1:
             s = st.number_input("組數", min_value=1, step=1, value=3)
         with c2:
-            r = st.number_input("次數", min_value=1, step=1, value=12)
-        with c3:
-            w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
-    else:
-        duration = st.number_input("運動時長 (分鐘)", min_value=1, step=1, value=30)
-    
-    # 【關鍵】Submit 按鈕必須在這個 with 區塊的最後，且縮排要正確
-    submitted = st.form_submit_button("打卡存進口袋 🐾")
-
-# --- 3. 處理表單送出 ---
-if submitted:
-    date_str = input_date.strftime("%Y-%m-%d")
-    st.session_state['workout_data'].append({
-        "date": date_str, 
-        "type": workout_type,
-        "exercise": ex_name, 
-        "sets": s, 
-        "reps": r, 
-        "weight": w,
-        "duration": duration
-    })
-    st.snow()
-    st.success(f"已記錄 {ex_name}！")
-
-st.divider()
-
-# --- 4. 運動日曆視圖 ---
-unique_days = list(set([item['date']
+            r = st.number_input("次數", min_value=1, step
+        
