@@ -5,7 +5,7 @@ from streamlit_calendar import calendar
 # --- 頁面設定 ---
 st.set_page_config(page_title="菡FITNESS GOAL", page_icon="🐾", layout="centered")
 
-# --- 深度自訂 CSS (維持奶茶色) ---
+# --- 深度自訂 CSS ---
 st.markdown("""
     <style>
     .main { background-color: #F3E9DC; }
@@ -23,7 +23,6 @@ st.markdown("""
     }
     .stButton>button:hover { background-color: #8E735B; color: white; }
     
-    /* 日曆樣式 */
     .fc-header-toolbar { color: #8E735B; }
     .fc-daygrid-day-number { color: #8E735B !important; text-decoration: none !important; }
     .fc-day-today { background-color: #EAE2D6 !important; }
@@ -45,7 +44,6 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     workout_type = st.radio("訓練類型", ["重量訓練", "有氧運動"], horizontal=True)
     ex_name = st.text_input("運動項目", placeholder="例如：深蹲 / 跑步機")
     
-    # 預設數據初始化
     s, r, w, duration = 0, 0, 0, 0
     
     if workout_type == "重量訓練":
@@ -64,7 +62,6 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
 # --- 3. 處理表單送出 ---
 if submitted:
     date_str = input_date.strftime("%Y-%m-%d")
-    # 確保字典格式完整閉合
     new_record = {
         "date": date_str, 
         "type": workout_type,
@@ -96,3 +93,22 @@ calendar_options = {
 
 cal_container = st.container()
 with cal_container:
+    # 這裡確保下一行是有縮排的
+    state = calendar(events=calendar_events, options=calendar_options, key="fixed_olaf_calendar")
+
+# --- 5. 點擊邏輯 ---
+if state.get("dateClick"):
+    clicked_date = state["dateClick"]["date"][:10]
+    st.markdown(f"### 🧸 {clicked_date} 的訓練清單")
+    
+    todays_workouts = [item for item in st.session_state['workout_data'] if item['date'] == clicked_date]
+    
+    if todays_workouts:
+        for idx, item in enumerate(todays_workouts):
+            if item.get("type") == "有氧運動":
+                detail_text = f"⏱️ {item['duration']} 分鐘"
+            else:
+                detail_text = f"💪 {item['sets']} 組 | {item['reps']} 次 | {item['weight']} kg"
+                
+            st.markdown(f"""
+                <div style="background-color: white; padding: 15px; border-radius: 20px; border: 2px
