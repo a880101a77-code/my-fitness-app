@@ -1,11 +1,11 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
 from streamlit_calendar import calendar
 
 # --- 頁面設定 ---
 st.set_page_config(page_title="小熊健身日誌", page_icon="🏋️", layout="centered")
 
-# --- 可愛風格 CSS ---
+# --- 可愛風格 CSS (保持不變) ---
 st.markdown("""
     <style>
     .main { background-color: #FFF9FB; }
@@ -15,8 +15,6 @@ st.markdown("""
         width: 100%; border: none; font-weight: bold;
     }
     .stForm { border: 2px solid #FFE5EC !important; border-radius: 25px !important; background-color: white !important; }
-    /* 強制修改日曆事件樣式為槓鈴感 */
-    .fc-event-title { font-weight: bold !important; }
     .fc-event { background-color: #FFB3C6 !important; border: none !important; cursor: pointer; }
     </style>
     """, unsafe_allow_html=True)
@@ -25,9 +23,9 @@ st.markdown("<h1>🏋️ 健身小日常 🏋️</h1>", unsafe_allow_html=True)
 
 # --- 1. 初始化資料儲存 ---
 if 'workout_data' not in st.session_state:
-    st.session_state['workout_data'] = [] # 儲存完整的運動細節
+    st.session_state['workout_data'] = []
 
-# --- 2. 快速打卡表單 ---
+# --- 2. 紀錄表單 ---
 with st.form(key="workout_form", clear_on_submit=True):
     st.markdown("<h3 style='color: #FFB3C6;'>🎀 紀錄新訓練</h3>", unsafe_allow_html=True)
     d = st.date_input("訓練日期", datetime.now())
@@ -41,7 +39,6 @@ with st.form(key="workout_form", clear_on_submit=True):
     submitted = st.form_submit_button("送出紀錄 🐾")
 
 if submitted:
-    # 儲存數據
     st.session_state['workout_data'].append({
         "date": d.isoformat(),
         "exercise": ex_name,
@@ -52,16 +49,11 @@ if submitted:
 
 st.divider()
 
-# --- 3. 準備日曆事件 (將所有運動合併為一個槓鈴圖示) ---
-# 我們讓每一天只要有運動，就顯示一個「🏋️」
+# --- 3. 運動日曆視圖 ---
 unique_days = list(set([item['date'] for item in st.session_state['workout_data']]))
-calendar_events = [
-    {"title": "🏋️ ", "start": day, "allDay": True} for day in unique_days
-]
+calendar_events = [{"title": "🏋️", "start": day, "allDay": True} for day in unique_days]
 
-# --- 4. 運動日曆視圖 ---
 st.markdown("<h3 style='color: #FFB3C6; text-align: center;'>📅 運動月曆</h3>", unsafe_allow_html=True)
-st.info("💡 點擊下方日曆的日期，可以查看當天的詳細訓練內容喔！")
 
 calendar_options = {
     "headerToolbar": {"left": "today prev,next", "center": "title", "right": ""},
@@ -69,26 +61,33 @@ calendar_options = {
     "selectable": True,
 }
 
-# 顯示日曆並捕捉點擊動作
+# 顯示日曆
 state = calendar(events=calendar_events, options=calendar_options, key="my_calendar")
 
-# --- 5. 點擊日曆後的詳細內容顯示 ---
+# --- 4. 修正後的點擊邏輯 ---
+# 檢查是否有點擊事件
 if state.get("dateClick"):
-    clicked_date = state["dateClick"]["date"].split("T")[0]
+    # 獲取點擊的原始日期字串
+    clicked_raw = state["dateClick"]["date"]
+    
+    # 核心修正：只取前 10 個字元 (YYYY-MM-DD)，避免時間部分的干擾
+    clicked_date = clicked_raw.split("T")[0]
+    
     st.markdown(f"### 🗓️ {clicked_date} 的訓練清單")
     
-    # 過濾出當天的運動
     todays_workouts = [item for item in st.session_state['workout_data'] if item['date'] == clicked_date]
     
     if todays_workouts:
         for idx, item in enumerate(todays_workouts):
-            with st.expander(f"項目 {idx+1}: {item['exercise']}"):
-                st.write(f"💪 組數: {item['sets']} 組")
-                st.write(f"🔢 次數/重量: {item['reps']}")
-                if st.button(f"刪除這筆 (項目 {idx+1})", key=f"del_{idx}"):
+            with st.container():
+                st.markdown(f"""
+                <div style="background-color: white; padding: 10px; border-radius: 15px; border: 1px solid #FFE5EC; margin-bottom: 10px;">
+                    <p style="margin:0; color:#FF85A2; font-weight:bold;">{item['exercise']}</p>
+                    <p style="margin:0; color:#4A4A4A; font-size: 0.9rem;">{item['sets']} 組 | {item['reps']} 次/公斤</p>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button(f"刪除這筆 ({item['exercise']})", key=f"del_{idx}_{clicked_date}"):
                     st.session_state['workout_data'].remove(item)
                     st.rerun()
     else:
-        st.write("這天還沒紀錄運動喔～加油！")
-
-st.markdown("<br><p style='text-align: center; color: #FFB3C6;'>每一刻的汗水都值得被紀錄 🍯</p>", unsafe_allow_html=True)
+        st.write("✨ 這天還空空的
