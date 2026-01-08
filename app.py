@@ -45,7 +45,7 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     workout_type = st.radio("訓練類型", ["重量訓練", "有氧運動"], horizontal=True)
     ex_name = st.text_input("運動項目", placeholder="例如：深蹲 / 跑步機")
     
-    # 初始化變數
+    # 預設數據
     s, r, w, duration = 0, 0, 0, 0
     
     if workout_type == "重量訓練":
@@ -53,4 +53,5 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
         with c1:
             s = st.number_input("組數", min_value=1, step=1, value=3)
         with c2:
-            r =
+            r = st.number_input("次數", min_value=1, step=1, value=12)
+        with
