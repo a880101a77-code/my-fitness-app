@@ -35,7 +35,9 @@ with st.form(key="workout_form", clear_on_submit=True):
     with col1:
         s = st.number_input("組數", min_value=1, step=1, value=3)
     with col2:
-        r = st.number_input("次數/重量", min_value=1, step=1, value=12)
+        r = st.number_input("次數", min_value=1, step=1, value=15)
+    with col3:
+        r = st.number_input("重量", min_value=3, step=1, value=200)      
     
     submitted = st.form_submit_button("送出紀錄 🐾")
 
