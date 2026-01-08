@@ -44,11 +44,38 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     workout_type = st.radio("訓練類型", ["重量訓練", "有氧運動"], horizontal=True)
     ex_name = st.text_input("運動項目", placeholder="例如：深蹲 / 跑步機")
     
+    # 預設數據
     s, w, duration = 0, 0, 0
     
+    # 根據類型顯示不同欄位
     if workout_type == "重量訓練":
         col1, col2 = st.columns(2)
         with col1:
             s = st.number_input("組數", min_value=1, step=1, value=3)
         with col2:
             w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
+    else:
+        duration = st.number_input("運動時長 (分鐘)", min_value=1, step=1, value=30)
+    
+    # 【核心修正】這行必須縮排在 with st.form 之下，且不能在 if 裡面
+    submitted = st.form_submit_button("打卡存進口袋 🐾")
+
+# --- 3. 處理表單送出 ---
+if submitted:
+    date_str = input_date.strftime("%Y-%m-%d")
+    new_record = {
+        "date": date_str, 
+        "type": workout_type,
+        "exercise": ex_name,
+        "sets": s if workout_type == "重量訓練" else None,
+        "weight": w if workout_type == "重量訓練" else None,
+        "duration": duration if workout_type == "有氧運動" else None
+    }
+    st.session_state['workout_data'].append(new_record)
+    st.snow()
+    st.success(f"已記錄 {ex_name}！")
+
+st.divider()
+
+# --- 4. 運動日曆視圖 ---
+calendar_events = []
