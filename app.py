@@ -1,11 +1,11 @@
 import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime
 from streamlit_calendar import calendar
 
 # --- 頁面設定 ---
 st.set_page_config(page_title="小熊健身日誌", page_icon="🏋️", layout="centered")
 
-# --- 可愛風格 CSS (保持不變) ---
+# --- 可愛風格 CSS ---
 st.markdown("""
     <style>
     .main { background-color: #FFF9FB; }
@@ -21,7 +21,7 @@ st.markdown("""
 
 st.markdown("<h1>🏋️ 健身小日常 🏋️</h1>", unsafe_allow_html=True)
 
-# --- 1. 初始化資料儲存 ---
+# --- 1. 初始化資料儲存 (目前先存臨時記憶體) ---
 if 'workout_data' not in st.session_state:
     st.session_state['workout_data'] = []
 
@@ -61,18 +61,11 @@ calendar_options = {
     "selectable": True,
 }
 
-# 顯示日曆
 state = calendar(events=calendar_events, options=calendar_options, key="my_calendar")
 
-# --- 4. 修正後的點擊邏輯 ---
-# 檢查是否有點擊事件
+# --- 4. 點擊邏輯與編輯 ---
 if state.get("dateClick"):
-    # 獲取點擊的原始日期字串
-    clicked_raw = state["dateClick"]["date"]
-    
-    # 核心修正：只取前 10 個字元 (YYYY-MM-DD)，避免時間部分的干擾
-    clicked_date = clicked_raw.split("T")[0]
-    
+    clicked_date = state["dateClick"]["date"].split("T")[0]
     st.markdown(f"### 🗓️ {clicked_date} 的訓練清單")
     
     todays_workouts = [item for item in st.session_state['workout_data'] if item['date'] == clicked_date]
@@ -90,4 +83,6 @@ if state.get("dateClick"):
                     st.session_state['workout_data'].remove(item)
                     st.rerun()
     else:
-        st.write("✨ 這天還空空的
+        st.write("✨ 這天還空空的，來場訓練吧！")
+
+st.markdown("<br><p style='text-align: center; color: #FFB3C6;'>每一刻的汗水都值得被紀錄 🍯</p>", unsafe_allow_html=True)
