@@ -48,7 +48,6 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     # 預設數據初始化
     s, r, w, duration = 0, 0, 0, 0
     
-    # 核心邏輯：根據類型切換顯示
     if workout_type == "重量訓練":
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -58,15 +57,42 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
         with col3:
             w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
     else:
-        # 有氧運動只出現分鐘
         duration = st.number_input("運動時長 (分鐘)", min_value=1, step=1, value=30)
     
-    # 送出按鈕對齊在 with st.form 下面
     submitted = st.form_submit_button("打卡存進口袋 🐾")
 
 # --- 3. 處理表單送出 ---
 if submitted:
     date_str = input_date.strftime("%Y-%m-%d")
-    st.session_state['workout_data'].append({
+    # 確保字典格式完整閉合
+    new_record = {
         "date": date_str, 
-        "type
+        "type": workout_type,
+        "exercise": ex_name, 
+        "sets": s, 
+        "reps": r, 
+        "weight": w,
+        "duration": duration
+    }
+    st.session_state['workout_data'].append(new_record)
+    st.snow()
+    st.success(f"已記錄 {ex_name}！")
+
+st.divider()
+
+# --- 4. 運動日曆視圖 ---
+current_data = st.session_state['workout_data']
+unique_days = list(set([item['date'] for item in current_data]))
+calendar_events = [{"title": "🍦", "start": d, "allDay": True} for d in unique_days]
+
+st.markdown("<h4>🗓️ 菡運動日記</h4>", unsafe_allow_html=True)
+
+calendar_options = {
+    "headerToolbar": {"left": "prev,next", "center": "title", "right": "today"},
+    "initialView": "dayGridMonth",
+    "selectable": True,
+    "timeZone": "UTC",
+}
+
+cal_container = st.container()
+with cal_container:
