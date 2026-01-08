@@ -56,7 +56,7 @@ st.divider()
 # 我們讓每一天只要有運動，就顯示一個「🏋️」
 unique_days = list(set([item['date'] for item in st.session_state['workout_data']]))
 calendar_events = [
-    {"title": "🏋️ 有運動!", "start": day, "allDay": True} for day in unique_days
+    {"title": "🏋️ ", "start": day, "allDay": True} for day in unique_days
 ]
 
 # --- 4. 運動日曆視圖 ---
