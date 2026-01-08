@@ -22,10 +22,8 @@ st.markdown("""
         border: none; font-weight: bold; transition: 0.3s; width: 100%;
     }
     .stButton>button:hover { background-color: #8E735B; color: white; }
-    
     .fc-header-toolbar { color: #8E735B; }
     .fc-daygrid-day-number { color: #8E735B !important; text-decoration: none !important; }
-    .fc-day-today { background-color: #EAE2D6 !important; }
     .fc-event { background-color: #C6AC8F !important; border: none !important; border-radius: 8px !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -44,17 +42,19 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     workout_type = st.radio("訓練類型", ["重量訓練", "有氧運動"], horizontal=True)
     ex_name = st.text_input("運動項目", placeholder="例如：深蹲 / 跑步機")
     
+    # 預設數據
     s, w, duration = 0, 0, 0
     
-    # 根據類型顯示不同欄位
+    # --- 動態顯示邏輯 ---
     if workout_type == "重量訓練":
         col1, col2 = st.columns(2)
         with col1:
             s = st.number_input("組數", min_value=1, step=1, value=3)
         with col2:
-            w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
+            w = st.number_input("重量 (kg)", min_value=0, step=1, value=10)
     else:
-        duration = st.number_input("運動時長 (分鐘)", min_value=1, step=1, value=30)
+        # 有氧模式：隱藏組數重量，顯示分鐘
+        duration = st.number_input("運動多久呢？ (單位：分鐘)", min_value=1, step=1, value=30)
     
     submitted = st.form_submit_button("打卡存進口袋 🐾")
 
@@ -91,11 +91,12 @@ calendar_options = {
     "headerToolbar": {"left": "prev,next today", "center": "title", "right": ""},
     "initialView": "dayGridMonth",
     "selectable": True,
+    "timeZone": "local",
 }
 
-cal_state = calendar(events=calendar_events, options=calendar_options, key="workout_calendar_final")
+cal_state = calendar(events=calendar_events, options=calendar_options, key="workout_calendar_v4")
 
-# --- 7. 點擊詳情顯示 (修復括號問題) ---
+# --- 7. 點擊詳情顯示 ---
 if cal_state.get("dateClick"):
     clicked_date = cal_state["dateClick"]["date"][:10]
     st.markdown(f"### 🧸 {clicked_date} 的訓練清單")
@@ -104,23 +105,24 @@ if cal_state.get("dateClick"):
     
     if todays_workouts:
         for idx, item in enumerate(todays_workouts):
-            # 先建立好要顯示的文字，避免在 HTML 裡面寫太複雜的邏輯
+            # 取得變數
             ex = item['exercise']
             tp = item['type']
             
+            # --- 核心邏輯：判斷顯示文字 ---
             if tp == "有氧運動":
-                detail = f"⏱️ 運動時長：{item['duration']} 分鐘"
+                # 明確加上「分鐘」
+                info_text = f"⏱️ 運動時長：{int(item['duration'])} 分鐘"
             else:
-                detail = f"💪 {item['sets']} 組 | {item['weight']} kg"
+                # 明確加上「組數」與「kg」
+                info_text = f"💪 {int(item['sets'])} 組 | {item['weight']} kg"
             
-            # 使用最安全的方式組合 HTML
-            card_html = f"""
+            st.markdown(f"""
                 <div style="background-color: white; padding: 15px; border-radius: 20px; border: 2px solid #EAE2D6; margin-bottom: 10px;">
                     <p style="margin:0; color:#8E735B; font-weight:bold;">{ex} <small>({tp})</small></p>
-                    <p style="margin:0; color:#A68A64; font-size: 0.9rem;">{detail}</p>
+                    <p style="margin:0; color:#A68A64; font-size: 0.9rem;">{info_text}</p>
                 </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
             
             if st.button(f"🗑️ 移除項目 {idx+1}", key=f"del_{idx}_{clicked_date}"):
                 st.session_state['workout_data'].remove(item)
