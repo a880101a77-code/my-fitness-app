@@ -5,7 +5,7 @@ from streamlit_calendar import calendar
 # --- 頁面設定 ---
 st.set_page_config(page_title="菡FITNESS GOAL", page_icon="🐾", layout="centered")
 
-# --- 深度自訂 CSS：全方位奶茶色 ---
+# --- 深度自訂 CSS (保持奶茶色) ---
 st.markdown("""
     <style>
     .main { background-color: #F3E9DC; }
@@ -22,8 +22,6 @@ st.markdown("""
         border: none; font-weight: bold; transition: 0.3s; width: 100%;
     }
     .stButton>button:hover { background-color: #8E735B; color: white; }
-    
-    /* 日曆奶茶化 */
     .fc-header-toolbar { color: #8E735B; }
     .fc-daygrid-day-number { color: #8E735B !important; text-decoration: none !important; }
     .fc-day-today { background-color: #EAE2D6 !important; }
@@ -51,7 +49,6 @@ with st.form(key="olaf_workout_form", clear_on_submit=True):
     with c3:
         w = st.number_input("重量(kg)", min_value=0, step=1, value=10)
     
-    # 這裡確保 Submit 按鈕是在 with st.form 的縮排裡面
     submitted = st.form_submit_button("打卡存進口袋 🐾")
 
 if submitted:
@@ -60,11 +57,12 @@ if submitted:
         "date": date_str, "exercise": ex_name, "sets": s, "reps": r, "weight": w
     })
     st.snow()
-    st.success(f"成功幫菡記下了 {ex_name}！")
+    # 這裡移除 rerun，讓表單自然送出，避免日曆因重新啟動而消失
 
 st.divider()
 
 # --- 3. 運動日曆視圖 ---
+# 建立 Event 清單
 unique_days = list(set([item['date'] for item in st.session_state['workout_data']]))
 calendar_events = [{"title": "🏋️", "start": day, "allDay": True} for day in unique_days]
 
@@ -77,7 +75,10 @@ calendar_options = {
     "timeZone": "UTC",
 }
 
-state = calendar(events=calendar_events, options=calendar_options, key="olaf_calendar")
+# 使用固定的 key 並將日曆放在一個 container 內以提高穩定性
+cal_container = st.container()
+with cal_container:
+    state = calendar(events=calendar_events, options=calendar_options, key="fixed_olaf_calendar")
 
 # --- 4. 點擊邏輯 ---
 if state.get("dateClick"):
@@ -88,7 +89,6 @@ if state.get("dateClick"):
     
     if todays_workouts:
         for idx, item in enumerate(todays_workouts):
-            # 確保這裡的 HTML 與 f-string 完全閉合
             st.markdown(f"""
                 <div style="background-color: white; padding: 15px; border-radius: 20px; border: 2px solid #EAE2D6; margin-bottom: 10px;">
                     <p style="margin:0; color:#8E735B; font-weight:bold;">{item['exercise']}</p>
@@ -96,11 +96,11 @@ if state.get("dateClick"):
                 </div>
             """, unsafe_allow_html=True)
             
-            # 為每個項目建立獨立的刪除按鈕
+            # 刪除功能
             if st.button(f"🗑️ 移除項目 {idx+1}", key=f"del_{idx}_{clicked_date}"):
                 st.session_state['workout_data'].remove(item)
                 st.rerun()
     else:
         st.write("這天還沒有小雪球紀錄唷～")
 
-st.markdown("<br><p style='text-align: center; color: #C6AC8F;'>每一小步都是歐拉夫的大進步 🍦</p>", unsafe_allow_html=True)
+st.markdown("<br><p style='text-align: center; color: #C6AC8F;'>每一小步都是菡的大進步 🍦</p>", unsafe_allow_html=True)
